@@ -1,4 +1,4 @@
-// TODO: confirm name convention and floating-point
+// TODO: confirm name convention and floating-point, shared > types?
 
 export interface Car {
     id: string;

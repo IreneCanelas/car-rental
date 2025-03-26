@@ -1,0 +1,27 @@
+<mat-card appearance="outlined" class="car-card" (click)="goToCarDetails()">
+    <div class="car-card-container">
+
+        <div class="car-image">
+            <img mat-card-image src="https://static.europcar.com/carvisuals/450x300/57383_GWY_R.png" alt="Photo of a Shiba Inu">
+        </div>
+
+        <div class="car-info">
+            <mat-card-header>
+                <mat-card-title>Fiat 500</mat-card-title>
+                <mat-card-subtitle>Fiat</mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+                <p> License Plate: 22-XX-44 </p>
+                <p> Year: 2024 </p>
+            </mat-card-content>
+        </div>
+
+        <div class="car-price">
+            <span>FROM</span>
+            <h2>€13.04 / day</h2>
+            <button mat-button (click)="goToCarBooking()">Rent</button>
+        </div>
+
+    </div>
+</mat-card>

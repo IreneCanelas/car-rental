@@ -1,0 +1,102 @@
+.car-card {
+    width: 90%;
+    margin: auto;
+    margin-top: 2vh;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.car-card button {
+    background-color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.car-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.car-image img {
+    max-width: 100%;
+    height: auto;
+}
+
+.car-description {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.car-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: start;
+    gap: 5vh;
+    width: 100%;
+    max-width: 600px;
+}
+
+.car-buttons {
+    button {
+      color: black;
+      font-weight: bold;
+      font-size: large;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px; 
+    }
+
+    .button-availability {
+        background-color: lightgrey;
+        margin-right: 1vh;
+
+        &:hover {
+            background-color: darkgray;
+        }
+    }
+
+    .button-rent {
+    background-color: #ffd73a;
+
+        &:hover {
+        background-color: #ffbf00;
+        }
+    }
+}
+
+
+@media (max-width: 768px) {
+    .car-buttons {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .car-buttons button {
+        width: 80%;
+        margin-right: 1vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .car-card {
+        width: 95%;
+    }
+
+    .car-buttons button {
+        width: 100%;
+        padding: 12px;
+        font-size: medium;
+    }
+}

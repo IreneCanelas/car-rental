@@ -1,5 +1,3 @@
-// TODO: confirm name convention and floating-point, shared > types?
-
 export interface Car {
     id: string;
     manufacturer: string;
@@ -12,6 +10,6 @@ export interface Car {
 
 export enum CarStatus {
     AVAILABLE = 'Available',
-    BOOKED = 'Booked'
+    UNAVAILABLE = 'Unvailable'
 }  
   

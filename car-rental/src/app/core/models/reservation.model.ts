@@ -1,5 +1,3 @@
-// TODO: confirm name convention and floating-point
-
 export interface Reservation {
     id: string;
     car_id: string;
@@ -23,6 +21,7 @@ export interface CreateReservationResponse {
 }
 
 export enum ReservationStatus {
+    PENDING = 'Pending',
     CONFIRMED = 'Confirmed',
     CANCELLED = 'Cancelled',
     COMPLETED = 'Completed',

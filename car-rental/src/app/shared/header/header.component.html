@@ -1,11 +1,35 @@
-<mat-toolbar>
+<mat-toolbar role="banner" [attr.aria-label]="HEADER_LABELS.HEADER_LOGO">
+    <div class="toolbar-left">
+        <a routerLink="/cars" class="logo" [attr.aria-label]="HEADER_LABELS.HEADER_LOGO">
+            Rent<span>Cars</span>
+        </a>
+    </div>
 
-    <span>Rent Cars</span>
+    <div class="toolbar-right">
+        <button class="menu-icon" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
+            aria-label="Toggle navigation menu">
+            &#9776;
+        </button>
 
-    <ul class="navbar-links">
-        <li><a routerLink="/">All Cars</a></li>
-        <li><a routerLink="/booking">Book Car Rental</a></li>
-        <li><a routerLink="/reservation">My Reservations</a></li>
-    </ul>
-
+        <nav role="navigation" [attr.aria-label]="HEADER_LABELS.HEADER_NAV_MAIN">
+            <ul id="main-navigation" class="navbar-links" [class.open]="menuOpen()">
+                <li>
+                    <a routerLink="/cars" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }"
+                        aria-current="page">
+                        {{ HEADER_LABELS.HEADER_LINK_AVAILABLE_CARS }}
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/booking" routerLinkActive="active-link" aria-current="page">
+                        {{ HEADER_LABELS.HEADER_LINK_BOOK_CAR }}
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/reservation" routerLinkActive="active-link" aria-current="page">
+                        {{ HEADER_LABELS.HEADER_LINK_MY_RESERVATIONS }}
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </mat-toolbar>

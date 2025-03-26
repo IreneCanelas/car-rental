@@ -2,25 +2,61 @@ mat-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(45deg, #ab4f2e, #ffae00);
-    padding: 10px 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    background: #1f1f1f;
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
 
-    span {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 28px;
-        font-weight: bold;
-        letter-spacing: 2px;
-        color: #fff;
-        text-transform: uppercase;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    .toolbar-left {
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #f5f5f5;
+            letter-spacing: 1px;
+
+            span {
+                color: #ffd700;
+            }
+
+            &:hover {
+                color: #ffd700;
+                text-decoration: none;
+            }
+        }
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+
+        .menu-icon {
+            font-size: 28px;
+            color: #f5f5f5;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: 1rem;
+            display: block;
+
+            &:hover {
+                color: #ffd700;
+            }
+
+            &:focus {
+                outline: none;
+            }
+        }
     }
 }
 
 .navbar-links {
     list-style: none;
     display: flex;
-    gap: 2vh;
+    gap: 2rem;
     margin: 0;
     padding: 0;
 
@@ -30,27 +66,69 @@ mat-toolbar {
 
     a {
         font-family: 'Poppins', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        color: #f5f5f5;
         text-decoration: none;
-        font-size: 16px;
-        font-weight: 600;
-        padding: 10px 15px;
-        color: white;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    li:first-child a {
-        color: #000;
-        background: rgba(255, 200, 142, 0.8);
-        border-radius: 5px;
+        padding: 8px 14px;
+        border-radius: 4px;
+        transition: background 0.3s ease, color 0.3s ease;
+
+        &.active-link {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        &:hover {
+            background-color: #2e2e2e;
+            color: white;
+        }
     }
 }
 
-.navbar-links a:hover {
-    color: black;
-    background: rgba(255, 200, 142, 0.8);
-    border-radius: 5px;
-    transform: scale(1.05);
-    cursor: pointer;
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        background: #1f1f1f;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        z-index: 9;
+        padding: 1rem 2rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+        &.open {
+            display: flex;
+        }
+
+        li {
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        a {
+            font-size: 16px;
+            text-align: left;
+        }
+    }
+
+    .toolbar-right {
+        flex-direction: row-reverse;
+    }
+
+    .toolbar-right .menu-icon {
+        display: block;
+    }
+
+    .navbar-links a {
+        width: 100%;
+    }
 }
 
+@media (min-width: 769px) {
+    mat-toolbar .toolbar-right .menu-icon {
+        display: none !important;
+    }
+}

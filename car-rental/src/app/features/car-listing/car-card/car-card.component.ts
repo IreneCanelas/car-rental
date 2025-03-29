@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {MatCardModule} from '@angular/material/card';
 import { Router } from '@angular/router';
+import { Car } from '../../../core/models/car.model';
 
 @Component({
   selector: 'app-car-card',
@@ -11,16 +12,14 @@ import { Router } from '@angular/router';
 })
 export class CarCardComponent {
 
+  @Input() car!: Car;
+
   constructor(private router: Router) {}
   
-  // TODO: ROTA DINAMICA, tornar isto em apenas uma função de rotas
   goToCarDetails() {
-    // this.router.navigate(['/book', carId]);
-
-    this.router.navigate(['/car']);
+    this.router.navigate(['/car', this.car.id]);
   }
 
-  // com params do id do carro
   goToCarBooking() {
     this.router.navigate(['/booking']);
   }

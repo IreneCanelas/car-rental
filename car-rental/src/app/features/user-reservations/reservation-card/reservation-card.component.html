@@ -1,0 +1,21 @@
+<mat-card appearance="outlined" class="reservation-card">
+    <mat-card-header>
+        <mat-card-title>Reservation for a {{ getCarModel(reservation.car_id) }}</mat-card-title>
+        <mat-card-subtitle>Status:
+            <span class="status" [ngClass]="reservation.status.toLowerCase()">
+                {{ reservation.status }}
+            </span>
+        </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+        <p><strong>Pickup:</strong> {{ reservation.pickup_time | date:'dd/MM/yyyy, HH:mm' }}</p>
+        <p><strong>Drop-off:</strong> {{ reservation.dropoff_time | date:'dd/MM/yyyy, HH:mm' }}</p>
+        <p><strong>Total Price:</strong> €{{ reservation.total_price }}</p>
+    </mat-card-content>
+
+    <mat-card-actions *ngIf="reservation.status !== 'Cancelled'">
+        <button mat-button color="primary" (click)="onEdit()">Edit</button>
+        <button mat-button color="warn" (click)="onCancel(reservation.id)">Cancel</button>
+    </mat-card-actions>
+</mat-card>

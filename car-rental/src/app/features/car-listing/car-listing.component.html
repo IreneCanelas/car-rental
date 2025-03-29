@@ -1,6 +1,7 @@
-<!-- TODO: Accessibility, div vs section -->
+<ng-container *ngIf="cars().length > 0; else loading">
+  <app-car-card *ngFor="let car of cars()" [car]="car" />
+</ng-container>
 
-<div>
-    <app-car-card></app-car-card>
-</div>
-
+<ng-template #loading>
+  <mat-progress-spinner color="accent" diameter="40"></mat-progress-spinner>
+</ng-template>

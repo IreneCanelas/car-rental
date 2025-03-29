@@ -23,4 +23,23 @@ export class InMemoryDataService implements InMemoryDbService {
     
         return { cars, reservations };
     }
+
+    post(reqInfo: RequestInfo) {
+        const collection = (reqInfo as any).collectionName;
+        const utils = (reqInfo as any).utils;
+      
+        if (collection === 'reservations') {
+          return utils.createResponse$(() => ({
+            status: 200,
+            body: {
+              success: true,
+              reservation_id: '123'
+            }
+          }));
+        }
+      
+        return undefined;
+      }
+      
+      
 }

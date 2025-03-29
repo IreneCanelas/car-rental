@@ -1,0 +1,30 @@
+.reservation-card {
+    width: 90%;
+    margin: auto;
+    margin-top: 2vh;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    .status {
+        font-weight: bold;
+        text-transform: uppercase;
+
+        &.pending {
+            color: orange;
+        }
+
+        &.confirmed {
+            color: green;
+        }
+
+        &.cancelled {
+            color: red;
+        }
+
+        &.completed {
+            color: gray;
+        }
+    }
+}

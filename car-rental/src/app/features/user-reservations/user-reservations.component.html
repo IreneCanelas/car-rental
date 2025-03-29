@@ -1,0 +1,58 @@
+<mat-card appearance="outlined" class="user-card">
+
+    <div>
+        <h2 class="car-card-title" id="user-reservation-title">
+            Customer Information
+        </h2>
+
+        <form [formGroup]="form" class="user-form" role="form" aria-labelledby="booking-page-title">
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="user-name">
+                    <mat-label>Customer Name</mat-label>
+                    <input matInput placeholder="Fill with your name" id="user_name" formControlName="user_name"
+                        aria-label="Enter your name">
+                </mat-form-field>
+
+                <button mat-raised-button class="save" (click)="saveUserName()"
+                    [disabled]="isSaveButtonDisabled()">Save</button>
+            </div>
+
+            <div *ngIf="userName?.invalid && (userName?.dirty || userName?.touched)" class="form-error">
+                <mat-error *ngIf="userName?.hasError('required')">
+                    Name shouldn't be empty.
+                </mat-error>
+                <mat-error *ngIf="userName?.hasError('minlength')">
+                    Name must be at least 2 characters.
+                </mat-error>
+                <mat-error *ngIf="userName?.hasError('maxlength')">
+                    Name cannot be longer than 50 characters.
+                </mat-error>
+            </div>
+        </form>
+
+    </div>
+
+</mat-card>
+
+<mat-card appearance="outlined" class="user-card">
+    <div>
+        <h2 class="car-card-title" id="user-reservation-title">
+            My Reservations
+        </h2>
+
+        <ng-container *ngIf="reservations() as userReservations; else loading">
+            <ng-container *ngIf="userReservations.length > 0; else noReservations">
+                <app-reservation-card *ngFor="let reservation of userReservations" [reservation]="reservation" />
+            </ng-container>
+        </ng-container>
+
+        <ng-template #noReservations>
+            <p>No reservations found.</p>
+        </ng-template>
+
+        <ng-template #loading>
+            <p>Loading...</p>
+        </ng-template>
+
+    </div>
+</mat-card>

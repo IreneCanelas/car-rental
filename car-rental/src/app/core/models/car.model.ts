@@ -10,6 +10,6 @@ export interface Car {
 
 export enum CarStatus {
     AVAILABLE = 'Available',
-    UNAVAILABLE = 'Unvailable'
+    UNAVAILABLE = 'Unavailable'
 }  
   

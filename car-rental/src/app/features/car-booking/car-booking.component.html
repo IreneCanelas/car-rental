@@ -1,5 +1,122 @@
 <mat-card appearance="outlined" class="car-card">
     <div class="car-card-container">
 
+        <h1 class="car-card-title" id="booking-page-title">
+            Car Booking
+        </h1>
+
+        <form [formGroup]="form" class="booking-form" role="form" aria-labelledby="booking-page-title">
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>User Name</mat-label>
+                <input matInput type="text" id="user_name" formControlName="user_name" aria-label="Enter your name" />
+            </mat-form-field>
+
+            <div *ngIf="userName?.invalid && (userName?.dirty || userName?.touched)" class="form-error">
+                <mat-error *ngIf="userName?.hasError('required')">
+                    Name is required.
+                </mat-error>
+
+                <mat-error *ngIf="userName?.hasError('minlength')">
+                    Name must be at least 2 characters.
+                </mat-error>
+
+                <mat-error *ngIf="userName?.hasError('maxlength')">
+                    Name cannot be longer than 50 characters.
+                </mat-error>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Car</mat-label>
+                <mat-select formControlName="car_id" aria-label="Select a car to book" id="car_id">
+                    <mat-option *ngFor="let car of availableCars()" [value]="car.id">
+                        {{ car.model }} - {{ car.license_plate }}
+                    </mat-option>
+
+                    <mat-option disabled *ngFor="let car of unavailableCars()" [value]="car.id">
+                        {{ car.model }} - {{ car.license_plate }} ({{car.status}})
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <div *ngIf="carId?.invalid && (carId?.dirty || carId?.touched)" class="form-error">
+                <mat-error *ngIf="carId?.hasError('required')">
+                    Car is required.
+                </mat-error>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Rental Date Range</mat-label>
+                <mat-date-range-input [rangePicker]="rangePicker" [min]="minDate" formGroupName="date_range">
+                    <input matStartDate formControlName="start" aria-label="Pickup date" />
+                    <input matEndDate formControlName="end" aria-label="Drop-off date" />
+                </mat-date-range-input>
+                <mat-datepicker-toggle matSuffix [for]="rangePicker"></mat-datepicker-toggle>
+                <mat-date-range-picker #rangePicker></mat-date-range-picker>
+            </mat-form-field>
+
+            <mat-error *ngIf="pickupDate?.hasError('required') && (pickupDate?.touched || pickupDate?.dirty)"
+                class="form-error">
+                Pickup date is required or incorrect.
+            </mat-error>
+
+            <mat-error *ngIf="dropoffDate?.hasError('required') && (dropoffDate?.touched || dropoffDate?.dirty)"
+                class="form-error">
+                Drop-off date is required or incorrect.
+            </mat-error>
+
+            <div class="time-range">
+                <p>Pickup and Dropoff Time Availability - from 09:00 AM to 18:30 PM </p>
+
+                <mat-form-field appearance="outline" class="half-width" style="margin-right: 1vh;">
+                    <mat-label>Pickup Time</mat-label>
+                    <input matInput [matTimepicker]="pickupTimepicker" formControlName="pickup_time"
+                        aria-label="Pickup time" matTimepickerMin="09:00" matTimepickerMax="18:30" required />
+                    <mat-timepicker-toggle matSuffix [for]="pickupTimepicker"></mat-timepicker-toggle>
+                    <mat-timepicker #pickupTimepicker startView="hour"></mat-timepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Drop-off Time</mat-label>
+                    <input matInput [matTimepicker]="dropoffTimepicker" formControlName="dropoff_time"
+                        aria-label="Drop-off time" matTimepickerMin="09:00" matTimepickerMax="18:30" required />
+                    <mat-timepicker-toggle matSuffix [for]="dropoffTimepicker"></mat-timepicker-toggle>
+                    <mat-timepicker #dropoffTimepicker startView="hour"></mat-timepicker>
+                </mat-form-field>
+
+                <div *ngIf="(pickupTime?.invalid && (pickupTime?.dirty || pickupTime?.touched)) || (dropoffTime?.invalid && (dropoffTime?.dirty || dropoffTime?.touched))"
+                    class="form-error">
+                    <mat-error
+                        *ngIf="pickupTime?.errors?.['matTimepickerParse'] || dropoffTime?.errors?.['matTimepickerParse']">
+                        Invalid time.
+                    </mat-error>
+
+                    <mat-error
+                        *ngIf="pickupTime?.errors?.['matTimepickerMin'] || dropoffTime?.errors?.['matTimepickerMin']">
+                        Time must be after 08:00.
+                    </mat-error>
+
+                    <mat-error
+                        *ngIf="pickupTime?.errors?.['matTimepickerMax'] || dropoffTime?.errors?.['matTimepickerMax']">
+                        Time must be before 18:30.
+                    </mat-error>
+
+                    <mat-error *ngIf="pickupTime?.hasError('required') || dropoffTime?.hasError('required')">
+                        Required time.
+                    </mat-error>
+                </div>
+
+                <h3>Total Price: 0€</h3>
+
+            </div>
+
+            <div class="form-actions">
+                <button mat-raised-button type="submit" (click)="submit()" [disabled]="form.invalid"
+                    aria-label="Submit booking form">
+                    Submit Reservation
+                </button>
+            </div>
+
+        </form>
     </div>
 </mat-card>

@@ -4,10 +4,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Router } from '@angular/router';
 import { ReservationCardComponent } from './reservation-card/reservation-card.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { Reservation } from '../../core/models/reservation.model';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-user-reservations',
@@ -21,6 +21,7 @@ import { Reservation } from '../../core/models/reservation.model';
     MatInputModule,
     ReservationCardComponent,
     MatCardModule,
+    MatProgressSpinner,
     NgFor,
     NgIf],
   templateUrl: './user-reservations.component.html',
@@ -31,14 +32,12 @@ export class UserReservationsComponent implements OnInit {
   private storedName: string;
 
   form: FormGroup;
-  savedUserName: string = '';
   reservations!: Signal<Reservation[]>;
 
   reservationService = inject(ReservationService);
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router) {
+    private fb: FormBuilder) {
 
     this.storedName = localStorage.getItem('user_name') || '';
 
@@ -53,9 +52,8 @@ export class UserReservationsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.savedUserName = localStorage.getItem('user_name') || '';
     this.reservationService.getReservationsFromLocalStorage();
-    this.reservations = this.reservationService.getReservationsByUserName(this.savedUserName);
+    this.reservations = this.reservationService.getReservationsByUserName(this.storedName);
   }
 
   get userName() {
@@ -70,5 +68,6 @@ export class UserReservationsComponent implements OnInit {
     const userName = this.userName?.value;
     localStorage.setItem('user_name', userName);
     this.storedName = userName;
+    this.reservations = this.reservationService.getReservationsByUserName(userName);
   }
 }

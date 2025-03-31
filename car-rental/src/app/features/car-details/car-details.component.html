@@ -3,7 +3,7 @@
     <div>
         <button mat-button class="button-back" (click)="goBack()"><mat-icon aria-hidden="false" aria-label="Example back-arrow icon" fontIcon="arrow_back"></mat-icon></button>
     </div>
-    
+
     <div class="car-card-container">
     
         <div class="car-image">
@@ -13,22 +13,22 @@
         <div class="car-description">
             <div class="car-info">
                 <div class="first-info">
-                    <p> Model: Fiat 500 </p>
-                    <p> Manufactor: Fiat </p>
-                    <p> License Plate: 22-XX-44 </p>
+                    <p> <b>Model: </b> {{ car()?.model }} </p>
+                    <p> <b>Manufactor: </b> {{ car()?.manufacturer }} </p>
+                    <p> <b>License Plate: </b> {{ car()?.license_plate }} </p>
                 </div>
                 <div>
-                    <p> Year: 2024 </p>
-                    <p> Daily Rate: 30€ </p>
-                    <p> Status: Available</p>
+                    <p> <b>Year: </b> {{ car()?.year }} </p>
+                    <p> <b>Daily Rate: </b> {{ car()?.rate_per_day }} </p>
+                    <p class="status" [ngClass]="car()?.status?.toLowerCase()">{{ car()?.status }}</p>
                 </div>
             </div>
 
             <div class="car-buttons">
-                <button mat-button class="button-availability">Check Availablility</button>
-                <button mat-button class="button-rent">Rent</button>
+                <ng-container *ngIf="car()?.status === 'Available';">
+                    <button mat-button color="primary" (click)="goToCarBooking()">Rent</button>
+                </ng-container>
             </div>
         </div>
-
     </div>
 </mat-card>

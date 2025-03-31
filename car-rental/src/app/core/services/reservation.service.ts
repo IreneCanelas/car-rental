@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, Observable, retry, shareReplay, tap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, retry, shareReplay, tap, throwError } from 'rxjs';
 import { CreateReservationResponse, Reservation, ReservationRequest, ReservationStatus } from '../models/reservation.model';
 import { LocalStorageService } from './local-storage.service';
 import { CarService } from './car.service';
@@ -16,8 +16,29 @@ export class ReservationService {
 
   private readonly _reservations = signal<Reservation[]>([]);
   readonly reservations = this._reservations.asReadonly();
+  private readonly _reservationToEdit = signal<Reservation | null>(null);
+  readonly reservationToEdit = this._reservationToEdit.asReadonly();
+  readonly isEditing = computed(() => this._reservationToEdit() !== null);
 
   constructor(private readonly http: HttpClient) { }
+
+  private saveToStorage(): void {
+    localStorage.setItem('reservations', JSON.stringify(this._reservations()));
+  }  
+
+  setReservationToEdit(reservation: Reservation): void {
+    this._reservationToEdit.set(reservation);
+  }
+  
+  clearReservationToEdit(): void {
+    this._reservationToEdit.set(null);
+  }
+
+  getReservationsByUserName(userName: string) {
+    return computed(() =>
+      this.reservations().filter(r => r.customer_name === userName)
+    );
+  }
 
   getReservationsFromLocalStorage() {
     try {
@@ -26,14 +47,7 @@ export class ReservationService {
       this._reservations.set(reservations);
     } catch (error) {
       console.error('Error reading reservations from storage:', error);
-      this._reservations.set([]);
     }
-  }
-
-  getReservationsByUserName(userName: string) {
-    return computed(() =>
-      this.reservations().filter(r => r.customer_name === userName)
-    );
   }
 
   createReservation(payload: ReservationRequest): Observable<CreateReservationResponse> {
@@ -51,17 +65,36 @@ export class ReservationService {
   updateReservation(reservationId: string, payload: ReservationRequest): Observable<Reservation> {
     return this.http.put<Reservation>(`${this.baseUrl}/reservations/${reservationId}`, payload).pipe(
       retry(3),
-      catchError(this.handleError)
+      catchError(this.handleError),
+      tap(res => {
+        if (res) {
+          this.updateReservationOnLocalStorage(reservationId, payload);
+        }
+      })
     );
   }
 
   deleteReservation(reservationId: string): Observable<void> {
-    // atualizar só para mudar status
     return this.http.delete<void>(`${this.baseUrl}/reservations/${reservationId}`).pipe(
       retry(3),
+      tap(() => {
+        const raw = this.localStorage.getData('reservations');
+        const reservations: Reservation[] = raw ? JSON.parse(raw) : [];
+  
+        const index = reservations.findIndex(r => r.id === reservationId);
+        if (index === -1) {
+          console.error(`Reservation with ID ${reservationId} not found.`);
+          return;
+        }
+  
+        reservations[index].status = ReservationStatus.CANCELLED;
+  
+        this.localStorage.saveData('reservations', JSON.stringify(reservations));
+        this._reservations.set(reservations);
+      }),
       catchError(this.handleError)
     );
-  }
+  }  
 
   private handleError(error: HttpErrorResponse) {
     let msg = 'An unknown error occurred.';
@@ -89,26 +122,33 @@ export class ReservationService {
     return totalPrice;
   }
 
-  private saveReservationOnLocalStorage(payload: ReservationRequest): void {
-    let reservations: Reservation[] = [];
+  scheduleAutoConfirm(reservationId: string): void {
+    setTimeout(() => {
+      const updated = this._reservations().map(res =>
+        res.id === reservationId && res.status === ReservationStatus.PENDING
+          ? { ...res, status: ReservationStatus.CONFIRMED }
+          : res
+      );
+  
+      this._reservations.set(updated);
+      this.saveToStorage();
+    }, 60000); 
+  }
 
-    try {
-      const rawReservations = this.localStorage.getData('reservations');
-      reservations = rawReservations ? JSON.parse(rawReservations) : [];
-    } catch (err) {
-      console.error('Failed to parse reservations from localStorage:', err);
-    }
-
+  saveReservationOnLocalStorage(payload: ReservationRequest): void {
+    const raw = this.localStorage.getData('reservations');
+    const reservations: Reservation[] = raw ? JSON.parse(raw) : [];
     const reservationID = Math.random().toString(36).substring(2, 10);
 
-    this.carService.getCarById(payload.car_id).subscribe({
-      next: (car) => {
-        if (!car) {
-          console.error(`Car with ID ${payload.car_id} not found.`);
-          return;
-        }
+    this.carService.getCarById(payload.car_id).pipe(
+      map((car) => {
+        if (!car) throw new Error(`Car with ID ${payload.car_id} not found`);
 
-        const totalPrice = this.getTotalPriceReservation(payload.pickup_time, payload.dropoff_time, car.rate_per_day);
+        const totalPrice = this.getTotalPriceReservation(
+          payload.pickup_time,
+          payload.dropoff_time,
+          car.rate_per_day
+        );
 
         const fullReservation: Reservation = {
           id: reservationID,
@@ -118,12 +158,49 @@ export class ReservationService {
         };
 
         reservations.push(fullReservation);
-        this.localStorage.saveData(`reservations`, JSON.stringify(reservations));
+        this.localStorage.saveData('reservations', JSON.stringify(reservations));
         this._reservations.set(reservations);
-      },
-      error: (err) => {
-        console.error('Error retrieving car from CarService:', err);
-      }
-    });
+        this.scheduleAutoConfirm(reservationID);
+
+        return fullReservation;
+      }),
+      catchError(this.handleError)
+    ).subscribe();
+  }
+
+  updateReservationOnLocalStorage(reservationId: string, payload: ReservationRequest): void {
+    const raw = this.localStorage.getData('reservations');
+    const reservations: Reservation[] = raw ? JSON.parse(raw) : [];
+
+    const index = reservations.findIndex(r => r.id === reservationId);
+    if (index === -1) {
+      throwError(() => new Error(`Reservation with ID ${reservationId} not found.`));
+    }
+
+    this.carService.getCarById(payload.car_id).pipe(
+      map((car) => {
+        if (!car) throw new Error(`Car with ID ${payload.car_id} not found.`);
+
+        const totalPrice = this.getTotalPriceReservation(
+          payload.pickup_time,
+          payload.dropoff_time,
+          car.rate_per_day
+        );
+
+        const updated: Reservation = {
+          id: reservationId,
+          ...payload,
+          total_price: totalPrice,
+          status: ReservationStatus.PENDING
+        };
+
+        reservations[index] = updated;
+        this.localStorage.saveData('reservations', JSON.stringify(reservations));
+        this._reservations.set(reservations);
+
+        return updated;
+      }),
+      catchError(this.handleError)
+    ).subscribe();
   }
 }

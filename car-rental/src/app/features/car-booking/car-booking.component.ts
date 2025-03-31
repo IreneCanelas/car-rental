@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, Input, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,10 +15,9 @@ import { MatTimepickerModule } from '@angular/material/timepicker';
 import { Reservation, ReservationRequest } from '../../core/models/reservation.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
-import { LocalStorageService } from '../../core/services/local-storage.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-car-booking',
@@ -47,12 +46,16 @@ export class CarBookingComponent implements OnInit {
   readonly dialog = inject(MatDialog);
   readonly reservationService = inject(ReservationService);
   readonly snackBar = inject(MatSnackBar);
+  private activatedRoute = inject(ActivatedRoute);
+  readonly totalPrice = signal<number>(0);
 
   form: FormGroup;
   cars = toSignal(this.carService.getCars(), { initialValue: [] });
   minDate = new Date();
-  editedReservation: Reservation | null = null;
-  @Input() reservationToEdit?: Reservation;
+  carIdFromRoute = '';
+
+  readonly reservationToEdit = this.reservationService.reservationToEdit;
+  readonly isEditing = this.reservationService.isEditing;
 
   availableCars = computed(() =>
     this.cars().filter(car => car.status === CarStatus.AVAILABLE)
@@ -98,7 +101,7 @@ export class CarBookingComponent implements OnInit {
         Validators.minLength(2),
         Validators.maxLength(25)
       ]],
-      car_id: ['', Validators.required],
+      car_id: [this.carIdFromRoute, Validators.required],
       date_range: this.fb.group({
         start: [null, Validators.required],
         end: [null, Validators.required]
@@ -109,12 +112,23 @@ export class CarBookingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const carId = this.activatedRoute.snapshot.paramMap.get('id');
+    this.carIdFromRoute = carId ? carId : '';
+    if (this.carIdFromRoute) {
+      this.form.patchValue({ car_id: this.carIdFromRoute });
+    }
+
     this.minDate.setDate(this.minDate.getDate() + 1);
 
-    if (this.reservationToEdit) {
-      this.editedReservation = this.reservationToEdit;
-      this.populateFormForEdit(this.editedReservation);
+    const existingRes = this.reservationToEdit();
+    if (existingRes) {
+      this.populateFormForEdit(existingRes);
     }
+
+    this.form.valueChanges.subscribe(() => {
+      this.updateTotalPrice();
+    });
+    
   }
 
   populateFormForEdit(reservation: Reservation) {
@@ -125,16 +139,15 @@ export class CarBookingComponent implements OnInit {
         start: new Date(reservation.pickup_time),
         end: new Date(reservation.dropoff_time),
       },
-      pickup_time: this.formatTime(reservation.pickup_time),
-      dropoff_time: this.formatTime(reservation.dropoff_time)
+      pickup_time: new Date(reservation.pickup_time),
+      dropoff_time: new Date(reservation.dropoff_time),
     });
   }
 
-  private formatTime(dateString: string): string {
+  formatTime(dateString: string): string {
     const date = new Date(dateString);
     return date.toTimeString().slice(0, 5);
   }
-
 
   combineDateAndTime(date: Date, time: string | Date): Date {
     const baseDate = new Date(date);
@@ -167,7 +180,33 @@ export class CarBookingComponent implements OnInit {
     return { pickup, dropoff };
   }
 
+  private updateTotalPrice(): void {
+    const carId = this.form.value.car_id;
+    const start = this.form.value.date_range?.start;
+    const end = this.form.value.date_range?.end;
+    const pickupTime = this.form.value.pickup_time;
+    const dropoffTime = this.form.value.dropoff_time;
+  
+    if (!carId || !start || !end || !pickupTime || !dropoffTime) {
+      this.totalPrice.set(0);
+      return;
+    }
+  
+    this.carService.getCarById(carId).subscribe(car => {
+      if (!car) {
+        this.totalPrice.set(0);
+        return;
+      }
 
+      const { pickup, dropoff } = this.getPickupAndDropoffDate();
+      
+      const total = this.reservationService.getTotalPriceReservation(pickup.toISOString(), dropoff.toISOString(), car?.rate_per_day);
+  
+      this.totalPrice.set(total);
+    });
+  }
+  
+  
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -190,20 +229,41 @@ export class CarBookingComponent implements OnInit {
       dropoff_time: dropoff.toISOString()
     };
 
-    console.log(reservation.pickup_time, reservation.dropoff_time)
-
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Confirm Reservation',
-        message: `Do you want to book this car from:\n\n${pickup.toLocaleString()} to ${dropoff.toLocaleString()}?`
+        message: `Do you want to book this car from:\n\n${pickup.toLocaleString('pt-PT')} to ${dropoff.toLocaleString('pt-PT')}?`
       }
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
 
-      if (this.editedReservation) {
-        console.log("editar")
+      if (this.isEditing()) {
+        const reservationId = this.reservationToEdit()?.id!;
+        this.reservationService.updateReservation(reservationId, reservation).subscribe({
+          next: () => {
+            this.snackBar.open('Reservation edited!', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'center',
+              verticalPosition: 'top',
+            });
+            this.form.reset();
+            this.reservationService.clearReservationToEdit();
+            this.router.navigate(['/reservations'])
+          },
+          error: (err) => {
+            console.error('Reservation error:', err);
+
+            const message =
+              err?.error?.message || err?.message || 'Something went wrong.';
+
+            this.snackBar.open(`${message}`, 'Dismiss', {
+              duration: 4000,
+              panelClass: 'snackbar-error'
+            });
+          }
+        });
       }
       else {
         this.reservationService.createReservation(reservation).subscribe({
@@ -215,7 +275,7 @@ export class CarBookingComponent implements OnInit {
                 verticalPosition: 'top',
               });
               this.form.reset();
-              this.router.navigate(['/'])
+              this.router.navigate(['/reservations'])
             } else {
               this.snackBar.open('Failed to create reservation.', 'Dismiss', {
                 duration: 4000,
@@ -236,10 +296,6 @@ export class CarBookingComponent implements OnInit {
           }
         });
       }
-
-      console.log('Form submitted:', reservation);
     })
-
   }
-
 }

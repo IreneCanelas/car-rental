@@ -44,33 +44,42 @@
     max-width: 600px;
 }
 
+.status {
+    font-weight: bold;
+    text-transform: uppercase;
+
+    &.pending {
+        color: orange;
+    }
+
+    &.available {
+        color: green;
+    }
+
+    &.unavailable {
+        color: red;
+    }
+
+    &.completed {
+        color: gray;
+    }
+}
+
 .car-buttons {
     button {
-      color: black;
-      font-weight: bold;
-      font-size: large;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 20px; 
-    }
-
-    .button-availability {
-        background-color: lightgrey;
-        margin-right: 1vh;
-
+        color: black;
+        font-weight: bold;
+        font-size: large;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+        width: 100%;
+        background-color: #ffd73a;
         &:hover {
-            background-color: darkgray;
-        }
-    }
-
-    .button-rent {
-    background-color: #ffd73a;
-
-        &:hover {
-        background-color: #ffbf00;
+            background-color: #ffbf00;
         }
     }
 }

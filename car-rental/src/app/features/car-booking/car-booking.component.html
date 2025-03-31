@@ -2,7 +2,7 @@
     <div class="car-card-container">
 
         <h1 class="car-card-title" id="booking-page-title">
-            Car Booking
+            {{ isEditing() ? 'Car Booking Update' : 'Car Booking' }}
         </h1>
 
         <form [formGroup]="form" class="booking-form" role="form" aria-labelledby="booking-page-title">
@@ -106,14 +106,16 @@
                     </mat-error>
                 </div>
 
-                <h3>Total Price: 0€</h3>
-
+                <h3 *ngIf="totalPrice() > 0">Total Price: {{ totalPrice() }}€</h3>
+                
+                <p>After reservation is confirmed you can no longer edit it. </p>
+                <p>Cancelations can be done until one day before the pickup date scheduled without refund. </p>
             </div>
 
             <div class="form-actions">
                 <button mat-raised-button type="submit" (click)="submit()" [disabled]="form.invalid"
                     aria-label="Submit booking form">
-                    Submit Reservation
+                    {{ isEditing() ? 'Update Reservation' : 'Submit Reservation' }}
                 </button>
             </div>
 

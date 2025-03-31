@@ -1,0 +1,52 @@
+.filter-bar {
+    margin: 2rem auto;
+    width: 80%;
+    display: block;
+
+    input {
+        font-size: 14px;
+    }
+
+    mat-label {
+        color: #888;
+        font-weight: 500;
+    }
+}
+
+.toggle-sort {
+    display: flex;
+    justify-content: space-between;
+
+    mat-slide-toggle {
+        margin-left: 4vh;
+        margin-top: 2vh;
+    }
+
+    mat-form-field {
+        margin-right: 4vh;
+    }
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: stretch;
+
+        .sort-dropdown {
+            width: 80%;
+            margin-left: 3vh;
+        }
+
+        mat-slide-toggle {
+            margin-bottom: 3vh;
+        }
+    }
+}
+
+.feedback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4rem;
+    color: #999;
+    font-size: 1.1rem;
+}

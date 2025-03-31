@@ -1,7 +1,30 @@
-<ng-container *ngIf="cars().length > 0; else loading">
-  <app-car-card *ngFor="let car of cars()" [car]="car" />
+<mat-form-field appearance="outline" class="filter-bar">
+  <mat-label>Search by Model or Manufacturer</mat-label>
+  <input matInput placeholder="e.g. Ford or Mustang" (input)="onFilterChange($event)" [value]="carState.filterText()" />
+</mat-form-field>
+
+<div class="toggle-sort">
+  <mat-slide-toggle color="primary" (change)="onToggleAvailability()" [checked]="carState.showAvailableOnly()">
+    Show only available cars
+  </mat-slide-toggle>
+  
+  <mat-form-field appearance="outline" class="sort-dropdown">
+    <mat-label>Sort by</mat-label>
+    <mat-select [value]="carState.sortOrder()" (selectionChange)="onSortChange($event.value)">
+      <mat-option value="asc">Price: Low to High</mat-option>
+      <mat-option value="desc">Price: High to Low</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<ng-container *ngIf="carState.filteredCars().length > 0; else fallback">
+  <app-car-card *ngFor="let car of carState.filteredCars()" [car]="car" />
 </ng-container>
 
-<ng-template #loading>
-  <mat-progress-spinner color="accent" diameter="40"></mat-progress-spinner>
+<ng-template #fallback>
+  <div class="feedback">
+    <mat-progress-spinner *ngIf="isLoading()" color="accent" diameter="40"></mat-progress-spinner>
+
+    <p *ngIf="!isLoading()">Sorry, no cars found!</p>
+  </div>
 </ng-template>

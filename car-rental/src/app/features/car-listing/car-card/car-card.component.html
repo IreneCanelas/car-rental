@@ -1,9 +1,10 @@
 <mat-card appearance="outlined" class="car-card" (click)="goToCarDetails()">
+
     <div class="car-card-container">
 
         <div class="car-image">
             <img mat-card-image src="https://static.europcar.com/carvisuals/450x300/57383_GWY_R.png"
-                alt="Photo of a Shiba Inu">
+                alt="Photo of a car">
         </div>
 
         <div class="car-info">
@@ -21,7 +22,13 @@
         <div class="car-price">
             <span>FROM</span>
             <h2>€{{ car.rate_per_day }} / day</h2>
-            <button mat-button (click)="goToCarBooking()">Rent</button>
+            <ng-container *ngIf="car.status === 'Available'; else unavailableBlock">
+                <button mat-button color="primary" (click)="goToCarBooking($event)">Rent</button>
+            </ng-container>
+
+            <ng-template #unavailableBlock>
+                <p><b>Currently Unavailable</b></p>
+            </ng-template>
         </div>
 
     </div>

@@ -42,6 +42,8 @@
 
         <ng-container *ngIf="reservations() as userReservations; else loading">
             <ng-container *ngIf="userReservations.length > 0; else noReservations">
+                <p>After reservation is confirmed you can no longer edit it. </p>
+                <p>Cancelations can be done until one day before the pickup date scheduled without refund. </p>
                 <app-reservation-card *ngFor="let reservation of userReservations" [reservation]="reservation" />
             </ng-container>
         </ng-container>
@@ -51,8 +53,9 @@
         </ng-template>
 
         <ng-template #loading>
-            <p>Loading...</p>
-        </ng-template>
-
+            <div class="spinner-wrapper">
+              <mat-progress-spinner diameter="40" mode="indeterminate" color="accent"></mat-progress-spinner>
+            </div>
+          </ng-template>          
     </div>
 </mat-card>
